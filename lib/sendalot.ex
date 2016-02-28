@@ -9,11 +9,13 @@ defmodule Sendalot do
     ```
   """
   @shard_header Application.get_env(:sendalot, Sendalot)[:shard_header]
+  @test_server_url Application.get_env(:sendalot, Sendalot)[:test_server_url]
+  @test_server_port Application.get_env(:sendalot, Sendalot)[:test_server_port]
 
   def send_message_from_shard_to_server message, shard, server do
     response = HTTPoison.post server, message, %{"#{@shard_header}": shard}
-  end 
-  
+  end
+
   def send_messages_from_shard_to_server messages, shard, server do
     messages
     |> Enum.each(fn(m) -> send_message_from_shard_to_server m, shard, server end)
@@ -28,4 +30,9 @@ defmodule Sendalot do
     messages = Enum.map((1..message_count), fn(i) -> Integer.to_string(i) end)
     send_messages_from_shards_to_server messages, (1..shard_count), server
   end
+
+  def send_n_messages_from_m_shards message_count, shard_count do
+    send_n_messages_from_m_shards_to_server message_count, shard_count, "#{@test_server_url}:#{@test_server_port}"
+  end
+
 end
